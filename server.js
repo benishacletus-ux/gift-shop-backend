@@ -17,18 +17,33 @@ const server = createServer(app);
 const PORT = 5000;
 const JWT_SECRET = 'gift-shop-secret-2024';
 
-// Socket.io setup
+// Socket.io setup - UPDATED with Netlify URLs
 const io = new Server(server, {
   cors: {
-    origin: ['http://localhost:3000', 'http://localhost:3001'],
+    origin: [
+      'https://pinkbears-shop.netlify.app',        // Customer order page
+      'https://pinkbears-adminpage.netlify.app',   // Admin page
+      'http://localhost:3000', 
+      'http://localhost:3001',
+      'http://localhost:5173' // Vite dev server
+    ],
     methods: ['GET', 'POST']
   }
 });
 
+// CORS configuration - UPDATED with Netlify URLs
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:3001'],
-  credentials: true
+  origin: [
+    'https://pinkbears-shop.netlify.app',        // Customer order page
+    'https://pinkbears-adminpage.netlify.app',   // Admin page  
+    'http://localhost:3000', 
+    'http://localhost:3001',
+    'http://localhost:5173' // Vite dev server
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
+
 app.use(express.json());
 
 // Database setup
@@ -211,7 +226,7 @@ function calculateEstimatedDelivery() {
 // ✅ API Routes
 
 app.get('/', (req, res) => {
-  res.json({ message: '🎀 Blush Gifts Backend is running! - Cash on Delivery Only' });
+  res.json({ message: '🎀 Pink Bears Gifts Backend is running! - Cash on Delivery Only' });
 });
 
 // Get all products
@@ -785,7 +800,10 @@ app.post('/api/admin/orders/:id/confirm-payment', authenticateAdmin, (req, res) 
 });
 
 server.listen(PORT, () => {
-  console.log(`💰 CASH ON DELIVERY BACKEND running on http://localhost:${PORT}`);
+  console.log(`💰 PINK BEARS CASH ON DELIVERY BACKEND running on http://localhost:${PORT}`);
+  console.log(`🌐 Backend URL: https://gift-shop-backend-yimq.onrender.com`);
+  console.log(`🛒 Customer Frontend: https://pinkbears-shop.netlify.app`);
+  console.log(`👑 Admin Frontend: https://pinkbears-adminpage.netlify.app`);
   console.log(`✅ PAYMENT METHOD: Cash on Delivery Only`);
   console.log(`✅ API endpoints are active`);
   console.log(`📦 Products endpoint: http://localhost:${PORT}/api/products`);
