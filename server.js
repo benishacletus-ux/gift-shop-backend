@@ -135,10 +135,17 @@ const initializeDatabase = () => {
       password_hash TEXT NOT NULL
     )`);
 
-    // Insert sample admin
+    // ✅ FIXED: Improved admin creation with better error handling
     const adminPassword = bcrypt.hashSync('abijithbeni20', 10);
-    db.run(`INSERT OR IGNORE INTO admins (username, password_hash) VALUES (?, ?)`, 
-      ['pinkbearsadmin', adminPassword]);
+    db.run(`INSERT OR REPLACE INTO admins (username, password_hash) VALUES (?, ?)`, 
+      ['pinkbearsadmin', adminPassword], function(err) {
+        if (err) {
+          console.error('❌ Failed to create admin:', err);
+        } else {
+          console.log('✅ Admin account created: pinkbearsadmin / abijithbeni20');
+          console.log('🔑 Admin ID:', this.lastID);
+        }
+      });
 
     // Insert sample products with rupee prices
     const sampleProducts = [
@@ -524,18 +531,34 @@ app.get('/api/chat-messages/:orderId', (req, res) => {
     });
 });
 
-// Admin login
+// ✅ FIXED: Admin login with debug logging
 app.post('/api/admin/login', (req, res) => {
   const { username, password } = req.body;
 
+  console.log('🔐 Login attempt:', { username });
+
   db.get('SELECT * FROM admins WHERE username = ?', [username], (err, admin) => {
     if (err) {
+      console.error('❌ Database error:', err);
       return res.status(500).json({ error: err.message });
     }
-    if (!admin || !bcrypt.compareSync(password, admin.password_hash)) {
+    
+    console.log('👤 Found admin:', admin ? 'Yes' : 'No');
+    
+    if (!admin) {
+      console.log('❌ Admin not found:', username);
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
+    const isPasswordValid = bcrypt.compareSync(password, admin.password_hash);
+    console.log('🔑 Password valid:', isPasswordValid);
+    
+    if (!isPasswordValid) {
+      console.log('❌ Invalid password for user:', username);
+      return res.status(401).json({ error: 'Invalid credentials' });
+    }
+
+    console.log('✅ Login successful for:', username);
     const token = jwt.sign({ id: admin.id, username: admin.username }, JWT_SECRET, { expiresIn: '24h' });
     res.json({ token, username: admin.username });
   });
